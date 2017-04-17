@@ -2,11 +2,13 @@
 myApp.controller('AnalysisController', ['$scope', '$http', function($scope, $http) {
 //console.log("Hello World from analysis controller");
 
-runPostgresQuery()
+runPostgresQuery('%', 'Prisutveckling per Område % (40kvm - 80kvm)', "price_development_percent", "select * from analysis_test where areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma')")
+runPostgresQuery('Tkr', 'Prisutveckling per Område Tkr (40kvm - 80kvm)', "price_development_absolute", "with base2 as ( select  areas , areas_count , quarter , round(avg(sold_price/nullif(sqm,0))) as avg_price , round(avg(sqm)) as avg_sqm , avg(lon::numeric) lon , avg(lat::numeric) lat from analysis_base where sqm between 40 and 80 and areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma') group by 1,2,3 ) select areas, quarter, round(avg_price::numeric/1000,1) as round from base2 order by 1,2")
 
-function runPostgresQuery(){
+function runPostgresQuery(yaxis_title, title, graph_name,query_in){
     // query_in = "select * from analysis_test where areas in ('Bromma','Bagarmossen')"
-    query_in = "select * from analysis_test where areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma')"
+    //query_in = "select * from analysis_test where areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma')"
+    
     reqData = {
         query: query_in
     }
@@ -15,17 +17,19 @@ function runPostgresQuery(){
         if (response.success){
             //console.log(response)
             data = response.data
-            structureData(data);
+            structureData(data, graph_name, title,yaxis_title);
         }
     });
 }
 
 
-function structureData(data){
+
+
+function structureData(data, graph_name, title, yaxis_title){
     x = [];
     y = [];
     plot_data = []
-    y.push(data[0]["round"]*100)
+    y.push(data[0]["round"])
     date = new Date(data[0]["quarter"]);
     //console.log(String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3)))
     date = String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3))
@@ -33,7 +37,7 @@ function structureData(data){
     for (var i = 1; i < data.length; i++) {
         if (data[i]["areas"] == data[i-1]["areas"]){
             //console.log("old area: " + data[i]["areas"])
-            y.push(data[i]["round"]*100)
+            y.push(data[i]["round"])
             date = new Date(data[i]["quarter"])
             //console.log(String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3)))
             date = String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3))
@@ -48,37 +52,38 @@ function structureData(data){
             });
             x = [];
             y = [];
-            y.push(data[0]["round"]*100)
-            date = new Date(data[0]["quarter"])
+            y.push(data[i]["round"])
+            date = new Date(data[i]["quarter"])
             //console.log(String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3)))
             date = String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3))
             x.push(date);
         }
     };
-    //console.log(plot_data);
+    
     plot_data.push({
         x:x,
         y:y,
         mode: 'lines',
         name: data[data.length-1]["areas"]
     });
+    console.log(plot_data);
 
 
     var layout = {
-        title: 'Prisutveckling per Område (40kvm - 80kvm)',
+        title: title,
         xaxis: {
             title: 'Kvartal',
             showgrid: false,
             zeroline: false
         },
         yaxis: {
-            title: '%',
+            title: yaxis_title,
             showline: false
         }
     };
 
-    PLOT = document.getElementById('price_development');
-    Plotly.plot( PLOT, plot_data, layout );
+    PLOT = document.getElementById(graph_name);
+    Plotly.plot( PLOT, plot_data, layout);
 
 }
 
