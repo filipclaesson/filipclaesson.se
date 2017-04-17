@@ -1,0 +1,11 @@
+.container-wraper{
+	margin-top: 50px;
+}
+
+#price_development{
+	width: 100%;
+}
+
+#top_header h1,p{
+	text-align: center;
+}
