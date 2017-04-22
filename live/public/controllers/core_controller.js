@@ -65,6 +65,9 @@ $scope.initiateLeaflet = function(){
         }).when('/heatmap',
         {
             templateUrl: 'views/heatmap.client.html'
+        }).when('/sanity',
+        {
+            templateUrl: 'views/sanity.client.html'
         })
             
     });
