@@ -20,7 +20,7 @@ $scope.visualizeProximityApt = function(aptIn) {
     price = aptIn.price
     m2 = aptIn.m2
 
-    query_in = "select * from test"
+    query_in = "select * from sanity_table where "
     reqData = {
         query: query_in
     }
