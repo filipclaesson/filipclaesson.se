@@ -11,11 +11,16 @@ id: 'mrliffa/citses8bt00062ipelfijao0j/tiles/256',
 accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
 }).addTo(mymap);
 
+$scope.lonFromMap = 'lon1'
+$scope.latFromMap = 'lat1'
 
 var plotObjects = [];
 
-$scope.visualize_proximity_apt = function function_name(sqm, price) {
-    query_in = "select * from test"
+$scope.visualizeProximityApt = function(aptIn) {
+    price = aptIn.price
+    m2 = aptIn.m2
+
+    query_in = "select * from sanity_table where "
     reqData = {
         query: query_in
     }
@@ -48,6 +53,16 @@ $scope.getApartmentsToPlot = function(){
     getApartmentsToPlotCircles()
 };
 
+
+
+mymap.on('click', function(e) {
+    // alert("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
+    console.log("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
+    $scope.lonFromMap = e.latlng.lng
+    $scope.latFromMap = e.latlng.lat
+    $scope.$apply();
+});
+
 // add legend top right
 // var legend = L.control({position: 'topright'});
 // legend.onAdd = function (mymap) {
@@ -72,7 +87,7 @@ $scope.getApartmentsToPlot = function(){
 var legend_description = L.control({position: 'topleft'});
 legend_description.onAdd = function (mymap) {
 
-    var div = L.DomUtil.create('div', 'desc-legend')
+    var div = L.DomUtil.create('div', 'sanity-visualize-legend')
         
     div.innerHTML += '<p><b>Klicka på kartan!</b><br>Platsen markerad kommer att "sanity checkas".</p>'
     // loop through our density intervals and generate a label with a colored square for each interval
@@ -86,8 +101,7 @@ legend_description.addTo(mymap);
 
 
 function getApartmentsToPlotCircles(){
-    query_in = "with base as ( select substring(lon::text from 1 for 6) as lon, substring(lat::text from 1 for 6) as lat, avg_time_to_central::numeric as avg_time_to_central, address, sold_price, sqm from apartments ) select lon,lat, round(avg(avg_time_to_central),1) as avg_time, min(address) as address, round(avg(sold_price::numeric/sqm::numeric)/1000)*1000 as price from base group by 1,2"
-    
+    query_in = "with base as (select substring(lon::text from 1 for 6) as lon, substring(lat::text from 1 for 6) as lat, avg_time_to_central::numeric as avg_time_to_central, address, sold_price, sqm from apartments ) select lon,lat, round(avg(avg_time_to_central),1) as avg_time, min(address) as address, round(avg(sold_price::numeric/sqm::numeric)/1000)*1000 as price from base group by 1,2"
 
     //query_in = "select lon,lat, avg_time from distance_to_central"
     //query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where date > '2016-01-01' and soldprice/nullif(sqm,0) > 100000 and sqm between 30 and 60 and area in ('Sodermalm','City', 'Kungsholmen')"
