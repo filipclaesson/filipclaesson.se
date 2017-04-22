@@ -1,4 +1,5 @@
 <div class="container" ng-controller="AptSanityController">
+
 <!--<div class="container" ng-init="initiateApp(); ng-init="initiateLeaflet(); " ng-controller="AptsController">-->
 	<!-- <div class="page-header" id="banner"> -->
 		<!-- <div class ="row"> -->
@@ -34,6 +35,7 @@
 <!-- </div> -->
 <div class="col-md-12">
 <p> Markera på kartan området lägenheten ligger i </p>
+<div class= "form" ng-controller="AptSanityInputController"
 <form novalidate class="raw-input">
 	<label> Uppskattat slutpris: <input type="text" ng-model="apt.price" />
 	</label>
@@ -47,12 +49,11 @@
 {{apt.price}}
 {{apt.m2}}
 
-<script>
-angular.module('apt_sanity_input_controller',[]).controller()
-</script>
+</div>
 
-
-<div class="col-md-6" id="mapid"></div>
+<div class "outermap" ng-controller="AptSanityVisualizerController">
+	<div class="col-md-6" id="mapid"></div>
+</div>
 </div>
 
 </div>
