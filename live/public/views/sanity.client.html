@@ -33,7 +33,20 @@
 		
 <!-- </div> -->
 <div class="col-md-12">
-	Hej
+<p> Markera på kartan området lägenheten ligger i </p>
+<form novalidate class="raw-input">
+	<label> Uppskattat slutpris: <input type="text" ng-model="apt.price" />
+	</label>
+	</br>
+	<label> Antal M2: <input type="text" ng-model="apt.m2" />
+	</label>
+	</br>
+	<input type="submit" ng-click="update(apt)" Value="Save" />
+</form>
+
+{{apt.price}}
+{{apt.m2}}
+
 
 <!-- <div> <p> HEJ MARTIN </p></div> -->
 <div class="col-md-6" id="mapid"></div>
