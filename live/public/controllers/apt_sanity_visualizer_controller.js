@@ -12,11 +12,9 @@ accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0
 }).addTo(mymap);
 
 
-
-
 var plotObjects = [];
 
-$scopt.visualize_proximity_apt = function function_name(sqm, price) {
+$scope.visualize_proximity_apt = function function_name(sqm, price) {
     query_in = "select * from test"
     reqData = {
         query: query_in
@@ -51,24 +49,24 @@ $scope.getApartmentsToPlot = function(){
 };
 
 // add legend top right
-var legend = L.control({position: 'topright'});
-legend.onAdd = function (mymap) {
+// var legend = L.control({position: 'topright'});
+// legend.onAdd = function (mymap) {
 
-    var div = L.DomUtil.create('div', 'info legend'),
-        grades = [4,8,12,18, 22,28, 32, 36, 40],
-        // grades = [0, 10, 20, 50, 100, 200, 500, 1000],
-        labels = [];
-    div.innerHTML += '<p><b>Minuter till T-centralen</b></p>'
-    // loop through our density intervals and generate a label with a colored square for each interval
-    for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=
-            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-            grades[i] + (grades[i + 1] ? ' &ndash;' + grades[i + 1] + ' min <br>' : ' min +');
-    }
+//     var div = L.DomUtil.create('div', 'info legend'),
+//         grades = [4,8,12,18, 22,28, 32, 36, 40],
+//         // grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+//         labels = [];
+//     div.innerHTML += '<p><b>Minuter till T-centralen</b></p>'
+//     // loop through our density intervals and generate a label with a colored square for each interval
+//     for (var i = 0; i < grades.length; i++) {
+//         div.innerHTML +=
+//             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+//             grades[i] + (grades[i + 1] ? ' &ndash;' + grades[i + 1] + ' min <br>' : ' min +');
+//     }
 
-    return div;
-};
-legend.addTo(mymap);
+//     return div;
+// };
+// legend.addTo(mymap);
 
 // add legend description
 var legend_description = L.control({position: 'topleft'});
@@ -76,7 +74,7 @@ legend_description.onAdd = function (mymap) {
 
     var div = L.DomUtil.create('div', 'desc-legend')
         
-    div.innerHTML += '<p><b>Beskrivning</b><br>Varje kvadrat motsvarar en tidpunkt till T-centralen. I varje kvadrat finns ett antal sålda lägenheter.</p>'
+    div.innerHTML += '<p><b>Klicka på kartan!</b><br>Platsen markerad kommer att "sanity checkas".</p>'
     // loop through our density intervals and generate a label with a colored square for each interval
     
     return div;
@@ -248,3 +246,8 @@ $scope.slider = {
     onChange: $scope.updatePlot
   }
 };
+
+
+
+
+}])
