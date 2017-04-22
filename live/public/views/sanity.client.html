@@ -34,21 +34,33 @@
 		
 <!-- </div> -->
 <div class="col-md-12">
-<p> Markera på kartan området lägenheten ligger i </p>
+</br>
+<label> Markera på kartan området lägenheten ligger i </label>
 <div class= "form" ng-controller="AptSanityInputController"
 <form novalidate class="raw-input">
-	<label> Uppskattat slutpris: <input type="text" ng-model="apt.price" />
+	<label> Utgångspris: <input type="text" ng-model="apt.price" class="form-control" />
 	</label>
 	</br>
-	<label> Antal M2: <input type="text" ng-model="apt.m2" />
+	<label> Antal Kvaderatmeter: <input type="text" ng-model="apt.m2" class="form-control"/>
 	</label>
 	</br>
-	<input type="submit" ng-click="update(apt)" Value="Save" />
+	<input class="btn" type="submit" ng-click="update(apt)" Value="Beräkna" />
 </form>
-
-{{apt.price}}
-{{apt.m2}}
-
+</br>
+</br>
+<table class="table table-striped">
+	<tr>
+		<th> Pris / m2 </th>
+	 	<th> Listpris </th>
+	 	<th> Antal kvaderatmeter </th>
+	</tr>
+	<tr>
+		<td> {{ResPricePerM2}} </td>
+		<td> {{apt.price}} </td>
+		<td> {{apt.m2}} </td>
+	</tr>
+</table>
+</br>
 </div>
 
 <div class "outermap" ng-controller="AptSanityVisualizerController">
