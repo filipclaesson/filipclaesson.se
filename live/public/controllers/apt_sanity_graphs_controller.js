@@ -1,9 +1,24 @@
 
-myApp.controller('AptSanityGraphsController', ['$scope', '$http', function($scope, $http) {
+myApp.controller('AptSanityGraphsController', ['$scope', '$http', '$rootScope', function($scope, $http) {
 //console.log("Hello World from analysis controller");
 
 
-plotChartText('sqm_bucket','bid_increase' ,'%', 'Prisuppgång från utgångsbud per stadsdel och storlek (%)', "price_up_development_percent", "select  areas , sqm_bucket ,round(avg(bid_increase::numeric*100),1) as bid_increase from analysis_base where bid_increase <> 'NaN' and room is not null and areas_count > 300 and areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma') group by 1,2 order by 1,2 ")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+plotChartText('quarter','price' ,'%', 'Prisuppgång från utgångsbud per stadsdel och storlek (%)', "analysis_chart", "select  areas , sqm_bucket ,round(avg(bid_increase::numeric*100),1) as bid_increase from analysis_base where bid_increase <> 'NaN' and room is not null and areas_count > 300 and areas in ('Hammarby Sjöstad','Hammarbyhöjden','Södermalm','Årsta','Liljeholmen','Aspudden','Östermalm','Kungsholmen','Gröndal','Vasastan','Älvsjö','Enskede','Midsommarkransen','Telefonplan','Hägersten','Bromma') group by 1,2 order by 1,2 ")
 
 function plotChartDate(x_data, y_data, yaxis_title, title, graph_name,query_in){
     // query_in = "select * from analysis_test where areas in ('Bromma','Bagarmossen')"

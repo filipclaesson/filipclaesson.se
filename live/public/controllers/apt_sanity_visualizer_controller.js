@@ -1,9 +1,9 @@
 
-myApp.controller('AptSanityVisualizerController', ['$scope', '$http', function($scope, $http) {
+myApp.controller('AptSanityVisualizerController', ['$scope', '$http', '$rootScope', function($scope, $http,$rootScope) {
     console.log("Hello World from apts sanity visalization");
 
 // L title kommer från mapbox i styles
-var mymap = L.map('mapid',{ zoomControl:false }).setView([59.33057783, 18.0894317], 12);
+var mymap = L.map('mapid',{ zoomControl:true }).setView([59.33057783, 18.0894317], 14);
 L.tileLayer('https://api.mapbox.com/styles/v1/mrliffa/ciwh1527n00c22ps5vuljnkhl/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ', {
 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
 maxZoom: 18,
@@ -11,80 +11,15 @@ id: 'mrliffa/citses8bt00062ipelfijao0j/tiles/256',
 accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
 }).addTo(mymap);
 
+//initialize objects
+theRectangle = L.rectangle([[59.33057783, 18.0894317], [59.34057783, 18.0994317]], {color: "#ff7800", weight: 1})
 $scope.lonFromMap = 'lon1'
 $scope.latFromMap = 'lat1'
+$scope.apartmentsInRectangle = L.layerGroup()
 
-var plotObjects = [];
-
-$scope.visualizeProximityApt = function(aptIn) {
-    price = aptIn.price
-    m2 = aptIn.m2
-
-    query_in = "select * from sanity_table where "
-    reqData = {
-        query: query_in
-    }
-    $http.get('/get_apartments', {params: reqData}).success(function(response){
-        if (response.success){
-            console.log(response)
-            data = response.data
-
-            //  Create Frontend Objects
-            for (var i in data){
-                var popupLabel = String(data[i]["avg_time"]) + " min, address: " + data[i].address + ", " + data[i].price + " sek/sqm";
-                var color = getColor(data[i]["avg_time"])
-                var circle = createCircle(L.latLng(data[i]["lat"],data[i]["lon"]), color, color, 0.5, 20);
-                circle.bindPopup(popupLabel);
-                plotObjects.push(
-                    {                       
-                        cricle: circle,
-                        date: data[i]["date"],
-                        price: data[i]["soldprice"],
-                        sqm: data[i]["sqm"]
-                    }
-                );
-            }
-            plot(plotObjects)
-        }
-    });
-}
-
-$scope.getApartmentsToPlot = function(){
-    getApartmentsToPlotCircles()
-};
-
-
-
-mymap.on('click', function(e) {
-    // alert("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
-    console.log("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng)
-    $scope.lonFromMap = e.latlng.lng
-    $scope.latFromMap = e.latlng.lat
-    $scope.$apply();
-});
-
-// add legend top right
-// var legend = L.control({position: 'topright'});
-// legend.onAdd = function (mymap) {
-
-//     var div = L.DomUtil.create('div', 'info legend'),
-//         grades = [4,8,12,18, 22,28, 32, 36, 40],
-//         // grades = [0, 10, 20, 50, 100, 200, 500, 1000],
-//         labels = [];
-//     div.innerHTML += '<p><b>Minuter till T-centralen</b></p>'
-//     // loop through our density intervals and generate a label with a colored square for each interval
-//     for (var i = 0; i < grades.length; i++) {
-//         div.innerHTML +=
-//             '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
-//             grades[i] + (grades[i + 1] ? ' &ndash;' + grades[i + 1] + ' min <br>' : ' min +');
-//     }
-
-//     return div;
-// };
-// legend.addTo(mymap);
 
 // add legend description
-var legend_description = L.control({position: 'topleft'});
+var legend_description = L.control({position: 'topright'});
 legend_description.onAdd = function (mymap) {
 
     var div = L.DomUtil.create('div', 'sanity-visualize-legend')
@@ -97,108 +32,191 @@ legend_description.onAdd = function (mymap) {
 legend_description.addTo(mymap);
 
 
+// gets called by input controller when button is hit
+$rootScope.$on("CallParentMethod", function(event, apt_in){
+   $scope.visualizeProximityApt(apt_in);
+});
 
 
 
-function getApartmentsToPlotCircles(){
-    query_in = "with base as (select substring(lon::text from 1 for 6) as lon, substring(lat::text from 1 for 6) as lat, avg_time_to_central::numeric as avg_time_to_central, address, sold_price, sqm from apartments ) select lon,lat, round(avg(avg_time_to_central),1) as avg_time, min(address) as address, round(avg(sold_price::numeric/sqm::numeric)/1000)*1000 as price from base group by 1,2"
+$scope.visualizeProximityApt = function(aptIn) {
 
-    //query_in = "select lon,lat, avg_time from distance_to_central"
-    //query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where date > '2016-01-01' and soldprice/nullif(sqm,0) > 100000 and sqm between 30 and 60 and area in ('Sodermalm','City', 'Kungsholmen')"
-    //query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where date > '2016-01-01' and (soldprice/nullif(sqm,0)) > 100000"
-    // query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where area in ('City') "
+    price = aptIn.price
+    m2 = aptIn.m2
+
+    console.log(aptIn)
+    
+    lon_min = $scope.bounds.getSouthWest().lng
+    lat_min = $scope.bounds.getSouthWest().lat
+    lon_max = $scope.bounds.getNorthEast().lng
+    lat_max = $scope.bounds.getNorthEast().lat
+    
+    query_in = "select sold_date,sold_price, sqm, sqm_price, lon, lat from apt_sanity where lon::numeric between " + lon_min + " and " + lon_max + " and lat::numeric between " + lat_min + " and " + lat_max + " order by sold_date"
+    
     reqData = {
         query: query_in
     }
     $http.get('/get_apartments', {params: reqData}).success(function(response){
         if (response.success){
             console.log(response)
-            data = response.data
-
-            //  Create Frontend Objects
-            for (var i in data){
-                var popupLabel = String(data[i]["avg_time"]) + " min, address: " + data[i].address + ", " + data[i].price + " sek/sqm";
-                var color = getColor(data[i]["avg_time"])
-                var circle = createCircle(L.latLng(data[i]["lat"],data[i]["lon"]), color, color, 0.5, 20);
-                circle.bindPopup(popupLabel);
-                plotObjects.push(
-                    {                       
-                        cricle: circle,
-                        date: data[i]["date"],
-                        price: data[i]["soldprice"],
-                        sqm: data[i]["sqm"]
-                    }
-                );
-            }
-            plot(plotObjects)
+            data = response.data         
+            db_result = data
+            // Plots Graphics on map
+            plotRectangleAndApts(db_result, $scope.bounds)
+            // Setup Chart
+            setupChart(db_result,aptIn)
+            
         }
     });
 }
 
 
-
-function getApartmentsToPlotRectangle(){
-    query_in = "select * from visualize_distance"
-    
-    //query_in = "with base as (  select substring(a.lon::text from 1 for 5) as lon , substring(a.lat::text from 1 for 5) as lat , g.avg_time_to_central::numeric as avg_time_to_central , address , sold_price , sqm  from apartments a  left join geo_data_sl g on (g.lon = round(a.lon::numeric,3)::text and g.lat = round(a.lat::numeric,3)::text)  where object_type = 'Lägenhet' )  select  lon ,lat ,sum(1) as nbr_of_apartments ,min(sqm) as min_sqm ,max(sqm) as max_sqm , round(avg(avg_time_to_central),1) as avg_time , min(address) as address , round(avg(sold_price::numeric/sqm::numeric)/1000)*1000 as avg_price from base group by 1,2 having round(avg(avg_time_to_central),1) > 0"
-    
-    //query_in = "with base as ( select substring(a.lon::text from 1 for 6) as lon , substring(a.lat::text from 1 for 6) as lat , g.avg_time_to_central::numeric as avg_time_to_central , address , sold_price , sqm from apartments a left join geo_data_sl g on (g.lon = round(a.lon::numeric,3)::text and g.lat = round(a.lat::numeric,3)::text) ) select lon ,lat , round(avg(avg_time_to_central),1) as avg_time , min(address) as address , round(avg(sold_price::numeric/sqm::numeric)/1000)*1000 as price from base group by 1,2 having round(avg(avg_time_to_central),1) > 0"
-    // query_in = "select lon,lat, avg_time from distance_to_central"
-    //query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where date > '2016-01-01' and soldprice/nullif(sqm,0) > 100000 and sqm between 30 and 60 and area in ('Sodermalm','City', 'Kungsholmen')"
-    //query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where date > '2016-01-01' and (soldprice/nullif(sqm,0)) > 100000"
-    // query_in = "select lon,lat,substr(date::text,0,11) as date, soldprice, sqm from apartments where area in ('City') "
-    reqData = {
-        query: query_in
+var marker = L.marker([59.33057783, 18.0894317])
+mymap.on('click', function(e) {
+    $scope.lonFromMap = e.latlng.lng
+    $scope.latFromMap = e.latlng.lat
+    $scope.$apply();
+    latlng = L.latLng(e.latlng.lat,e.latlng.lng)
+    console.log(latlng)
+    marker.setLatLng(latlng)
+    if (!mymap.hasLayer(marker)){
+        marker.addTo(mymap)
     }
-    $http.get('/get_apartments', {params: reqData}).success(function(response){
-        if (response.success){
-            console.log(response)
-            data = response.data
+    marker.update()
+    $scope.bounds = getBoundsFormPosAndDist(latlng,1000)
+});
 
-            //  Create Frontend Objects
-            for (var i in data){
-                var popupLabel = data[i]["avg_time"] + "min, count: " + String(data[i]["nbr_of_apartments"]) + ", " + data[i]["min_sqm"] + "≤ sqm ≤" + data[i]["max_sqm"] + ", address: " + data[i]["address"] + ", " + data[i]["avg_price"] + "/kvm";
-                var color = getColor(data[i]["avg_time"])
-                var square = createSquare(data[i]["lat_short"],data[i]["lon_short"], color, color, 0.5, 20);
-                square.bindPopup(popupLabel);
-                plotObjects.push(
-                    {                       
-                        cricle: square,
-                        date: data[i]["date"],
-                        price: data[i]["soldprice"],
-                        sqm: data[i]["sqm"]
-                    }
-                );
-            }
-            plot(plotObjects)
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+function getBoundsFormPosAndDist(latlng, square_meassure){  // generally used geo measurement function
+    var R = 6378.137; // Radius of earth in KM
+   
+    meters_per_deg_lon = 111320*Math.cos(latlng.lat)
+    meters_per_deg_lat = 110574 //1 deg matlab lat
+    degrees_to_subadd_lng = ((square_meassure/2)/meters_per_deg_lon)
+    degrees_to_subadd_lat = ((square_meassure/2)/meters_per_deg_lat)   
+    var southWest = L.latLng(latlng.lat-degrees_to_subadd_lat, latlng.lng-degrees_to_subadd_lng)
+    var northEast = L.latLng(latlng.lat+degrees_to_subadd_lat, latlng.lng+degrees_to_subadd_lng)
+    // northEast = L.latLng(40.774, -74.125),
+    bounds = L.latLngBounds(southWest, northEast);
+    return bounds
+}
+
+
+
+
+
+function plotRectangleAndApts(db_result, bounds){
+    theRectangle.setBounds(bounds)
+    theRectangle.addTo(mymap);
+    $scope.apartmentsInRectangle.clearLayers()
+    // plot circles
+    for (var i in db_result){
+        var popupLabel = String(db_result[i]["sold_date"]) + ", sqm: " + db_result[i]["sqm"] + ", " + db_result[i]["sqm_price"] + " sek/sqm";
+        var color = "#19BF00"
+        var circle = L.circle(L.latLng(db_result[i]["lat"],db_result[i]["lon"]), 10)
+        circle.bindPopup(popupLabel);
+        $scope.apartmentsInRectangle.addLayer(circle)
+    }
+    $scope.apartmentsInRectangle.addTo(mymap)
+}
+
+function setupChart(db_result, apt_in){
+    Plotly.purge('analysis_graph');
+    y = []
+    x = []
+    console.log(db_result[i])
+    plot_data = []
+    for (var i = 0; i < db_result.length; i++) {
+        y.push(db_result[i]["sqm_price"])
+        date = new Date(db_result[i]["sold_date"]);
+        // date = date = String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3))
+        x.push(date)
+    };
+
+    plot_data.push({
+        x:x,
+        y:y,
+        mode: 'markers',
+        name: 'Historiska Försäljningar'
     });
+    // apt_in
+    
+    today = new Date();
+    
+    plot_data.push({
+        y:[apt_in.price/apt_in.m2],
+        x:[today],
+        mode: 'markers',
+        name: 'Angiven Lägenhet'
+    });
+    console.log("plot_data");
+    console.log(plot_data);
+    
+    var layout = {
+        title: 'Historisk Data',
+        xaxis: {
+            title: 'Datum',
+            showgrid: false,
+            zeroline: false
+        },
+        yaxis: {
+            title: 'pris',
+            showline: false
+        }
+    };
+    
+    PLOT = document.getElementById('analysis_graph');
+    Plotly.plot( PLOT, plot_data, layout);
 }
 
 
-function plot(circles){
-	for (var i in circles){
-		circles[i]["cricle"].addTo(mymap);
-	}
-}
+
+// ----------------------------------------------
+// ----------------------------------------------
+// ----------------------------------------------
+// ---------                           ----------
+// ---------                           ----------
+// ---------                           ----------
+// ---------                           ----------
+// ---------            OLD            ----------
+// ---------                           ----------
+// ---------                           ----------
+// ---------                           ----------
+// ---------                           ----------
+// ----------------------------------------------
+// ----------------------------------------------
+// ----------------------------------------------
+
+
 
 $scope.updatePlot = function(){
-	sliderDate = ($scope.slider.date);
-	for (var i in plotObjects){
-		plotObjects[i]["cricle"].addTo(mymap);	
-	}
+    sliderDate = ($scope.slider.date);
+    for (var i in plotObjects){
+        plotObjects[i]["cricle"].addTo(mymap);  
+    }
 
 }
 
 function createCircle(latlng, color, fillColor, fillOpacity, radius, popupText){
-	var circle =  L.Rectangle(latlng, {
-	    color: color,
-	    fillColor: fillColor,
-	    fillOpacity: fillOpacity,
-	    radius: radius
-		})
-	circle.bindPopup(popupText);
-	return circle;
+    var circle =  L.Circle(latlng, {
+        color: color,
+        fillColor: fillColor,
+        fillOpacity: fillOpacity,
+        radius: radius
+        })
+    circle.bindPopup(popupText);
+    return circle;
 }
 
 function createSquare(lat,lng, color, fillColor, fillOpacity, radius, popupText){
@@ -262,6 +280,16 @@ $scope.slider = {
 };
 
 
-
-
+function measure(lat1, lon1, lat2, lon2){  // generally used geo measurement function
+    var R = 6378.137; // Radius of earth in KM
+    var dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+    var dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
+    return d * 1000; // meters
+}
 }])
+
