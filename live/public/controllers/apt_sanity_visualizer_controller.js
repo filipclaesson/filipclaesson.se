@@ -3,19 +3,21 @@ myApp.controller('AptSanityVisualizerController', ['$scope', '$http', '$rootScop
     console.log("Hello World from apts sanity visalization");
 
 // L title kommer från mapbox i styles
-var mymap = L.map('mapid',{ zoomControl:true }).setView([59.33057783, 18.0894317], 14);
+var mymap = L.map('mapid_sanity',{ zoomControl:true }).setView([59.33057783, 18.0894317], 13);
 L.tileLayer('https://api.mapbox.com/styles/v1/mrliffa/ciwh1527n00c22ps5vuljnkhl/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ', {
 attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
 maxZoom: 18,
 id: 'mrliffa/citses8bt00062ipelfijao0j/tiles/256',
 accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
 }).addTo(mymap);
-
+$scope.radius_size = 300
+the_cricle = L.circle([[59.33057783, 18.0894317], [59.34057783, 18.0994317]],$scope.radius_size,{color: "#ff7800",fillOpacity: 0.0})
 //initialize objects
-theRectangle = L.rectangle([[59.33057783, 18.0894317], [59.34057783, 18.0994317]], {color: "#ff7800", weight: 1})
+//theRectangle = L.rectangle([[59.33057783, 18.0894317], [59.34057783, 18.0994317]], {color: "#ff7800", weight: 1})
 $scope.lonFromMap = 'lon1'
 $scope.latFromMap = 'lat1'
 $scope.apartmentsInRectangle = L.layerGroup()
+initiatePlot()
 
 
 // add legend description
@@ -37,6 +39,22 @@ $rootScope.$on("CallParentMethod", function(event, apt_in){
    $scope.visualizeProximityApt(apt_in);
 });
 
+
+
+$scope.apt = {};
+$scope.ResPricePerM2 = "";
+
+
+$scope.childmethod = function() {
+    $rootScope.$emit("CallParentMethod", $scope.apt);
+}
+
+
+
+$scope.computePricePerM2 = function(){
+    res = $scope.apt.price/$scope.apt.m2;
+    $scope.ResPricePerM2 = Math.round(res*1000)/1000;
+}
 
 
 $scope.visualizeProximityApt = function(aptIn) {
@@ -61,10 +79,24 @@ $scope.visualizeProximityApt = function(aptIn) {
             console.log(response)
             data = response.data         
             db_result = data
+            datas_to_plot = []
             // Plots Graphics on map
-            plotRectangleAndApts(db_result, $scope.bounds)
+            $scope.apartmentsInRectangle.clearLayers()
+            center =  L.latLng($scope.latFromMap,$scope.lonFromMap)
+            for (var i in db_result){
+                cur_pos = L.latLng(db_result[i]["lat"],db_result[i]["lon"])
+                if (center.distanceTo(cur_pos)<$scope.radius_size){
+                    var circle = L.circle(cur_pos,10)
+                    datas_to_plot.push(db_result[i])
+                    $scope.apartmentsInRectangle.addLayer(circle)
+                }
+            }
+            $scope.apartmentsInRectangle.addTo(mymap)
+            the_cricle.setLatLng(center)
+            the_cricle.addTo(mymap)
+
             // Setup Chart
-            setupChart(db_result,aptIn)
+            setupChart(datas_to_plot,aptIn)
             
         }
     });
@@ -83,7 +115,9 @@ mymap.on('click', function(e) {
         marker.addTo(mymap)
     }
     marker.update()
-    $scope.bounds = getBoundsFormPosAndDist(latlng,1000)
+    $scope.bounds = getBoundsFormPosAndDist(latlng,500)
+
+    $scope.visualizeProximityApt($scope.apt)
 });
 
 
@@ -103,8 +137,8 @@ function getBoundsFormPosAndDist(latlng, square_meassure){  // generally used ge
    
     meters_per_deg_lon = 111320*Math.cos(latlng.lat)
     meters_per_deg_lat = 110574 //1 deg matlab lat
-    degrees_to_subadd_lng = ((square_meassure/2)/meters_per_deg_lon)
-    degrees_to_subadd_lat = ((square_meassure/2)/meters_per_deg_lat)   
+    degrees_to_subadd_lng = ((square_meassure)/meters_per_deg_lon)
+    degrees_to_subadd_lat = ((square_meassure)/meters_per_deg_lat)   
     var southWest = L.latLng(latlng.lat-degrees_to_subadd_lat, latlng.lng-degrees_to_subadd_lng)
     var northEast = L.latLng(latlng.lat+degrees_to_subadd_lat, latlng.lng+degrees_to_subadd_lng)
     // northEast = L.latLng(40.774, -74.125),
@@ -113,23 +147,6 @@ function getBoundsFormPosAndDist(latlng, square_meassure){  // generally used ge
 }
 
 
-
-
-
-function plotRectangleAndApts(db_result, bounds){
-    theRectangle.setBounds(bounds)
-    theRectangle.addTo(mymap);
-    $scope.apartmentsInRectangle.clearLayers()
-    // plot circles
-    for (var i in db_result){
-        var popupLabel = String(db_result[i]["sold_date"]) + ", sqm: " + db_result[i]["sqm"] + ", " + db_result[i]["sqm_price"] + " sek/sqm";
-        var color = "#19BF00"
-        var circle = L.circle(L.latLng(db_result[i]["lat"],db_result[i]["lon"]), 10)
-        circle.bindPopup(popupLabel);
-        $scope.apartmentsInRectangle.addLayer(circle)
-    }
-    $scope.apartmentsInRectangle.addTo(mymap)
-}
 
 function setupChart(db_result, apt_in){
     Plotly.purge('analysis_graph');
@@ -177,9 +194,36 @@ function setupChart(db_result, apt_in){
     };
     
     PLOT = document.getElementById('analysis_graph');
-    Plotly.plot( PLOT, plot_data, layout);
+    Plotly.plot(PLOT, plot_data, layout);
 }
 
+
+function initiatePlot(){
+    plot_data = []
+    plot_data.push({
+        y:[0],
+        x:[0],
+        mode: 'markers',
+        name: 'Angiven Lägenhet'
+    });
+    console.log("plot_data");
+    
+    var layout = {
+        title: 'Historisk Data',
+        xaxis: {
+            title: 'Datum',
+            showgrid: false,
+            zeroline: false
+        },
+        yaxis: {
+            title: 'pris',
+            showline: false
+        }
+    };
+    
+    PLOT = document.getElementById('analysis_graph');
+    Plotly.plot(PLOT, plot_data, layout);
+}
 
 
 // ----------------------------------------------

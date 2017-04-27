@@ -10,10 +10,11 @@
 
 
 #analysis_graph{
-	height:35%;
+	height:400px;
 	width:100%
 }
 
-#mapid{
-	height:60%;
+#mapid_sanity{
+	height:40%;
+	width:100%;
 }
