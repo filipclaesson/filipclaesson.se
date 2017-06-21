@@ -3,13 +3,18 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
     console.log("Hello World from apts sanity visalization");
     
     // ------------ global variables ------------ //
-    $scope.datas_to_plot = [] // the data that should be within the sanity check
+    $scope.datas_within_bounds = [] // the data that should be within the sanity check
+    $scope.datas_to_plot = [];
     $scope.radius_size = 300;
     $scope.apt = {};
     $scope.ResPricePerM2 = "";
-    // $scope.current_center;
-    
+    $scope.sqm_slider_value_min = 20;
+    $scope.sqm_slider_value_max = 150;
     // ------------------------------------------ //
+
+
+
+    get_data_from_db(L.latLng(59.33057783, 18.0494317));
 
 
     var sanity_map = new MapHandler('mapid_sanity', $scope.radius_size)
@@ -18,39 +23,64 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
     var sanity_chart = new ChartHandler('analysis_graph')
     //sanity_chart.plotData([])
 
-    /* event stuff */
+
+
+    /* -------------- observer definitions -------------- */
     var inherits = require('util').inherits;
     var EventEmitter = require('events').EventEmitter;
-    function mapObservable() {  
+
+    function dbObservable() {  
         EventEmitter.call(this);
     }
-    inherits(mapObservable, EventEmitter);  
-    mapObservable.prototype.data_updated = function (position) {  
-        this.emit('data_updated', position);
+    inherits(dbObservable, EventEmitter);  
+    dbObservable.prototype.db_data_updated = function (position) {  
+        this.emit('db_data_updated', position);
     };
-    var data_observer = new mapObservable();
-
-
-   
     
+    function slidersObservable() {  
+        EventEmitter.call(this);
+    }
+    inherits(slidersObservable, EventEmitter);  
+    slidersObservable.prototype.slider_updated = function (position) {  
+        this.emit('slider_updated', position);
+    };
+    /* ------------------------------------------ */
 
-    data_observer.on('data_updated', function () {
-        
-        sanity_map.clearCircles();
-        sanity_map.drawCircles($scope.datas_to_plot);
-        sanity_map.setBounds($scope.current_center);
-        
+
+    /* -------------- on events -------------- */
+
+    var db_observer = new dbObservable();
+    var sqm_slider_observer = new slidersObservable();
+   
+
+    db_observer.on('db_data_updated', function () {
+        console.log("db_data_updated event occured")
+        filterOnSqm();
+        sanity_map.clearApts();
+        sanity_map.drawApts($scope.datas_to_plot);
+        sanity_map.setBounds($scope.current_center, $scope.radius_size);
         sanity_chart.plotData($scope.datas_to_plot);
-        // Setup data for map
+    });
+
+
+    sqm_slider_observer.on('slider_updated', function () {
+        console.log("slider_updated event occured")
+        filterOnSqm();
+        sanity_map.clearApts();
+        sanity_map.drawApts($scope.datas_to_plot);
+        sanity_chart.plotData($scope.datas_to_plot);
 
     });
 
-    
-
-
     sanity_map.getMap().on('click', function(e) {
-        $scope.current_center = e.latlng;
-        position = e.latlng;
+        get_data_from_db(e.latlng)
+    });
+
+    
+function get_data_from_db(position){
+    console.log("map_click event occured")
+        $scope.current_center = position;
+
         bounds = getBoundsFromPosAndDist(position,500);
 
         lon_min = bounds.getSouthWest().lng
@@ -68,27 +98,23 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
                 data = response.data;         
                 db_result = data;
                 //filter raw data to fit within circle
+                $scope.datas_within_bounds = [];
                 $scope.datas_to_plot = [];
                 center = position;
                 for (var i in db_result){
                     cur_pos = L.latLng(db_result[i]["lat"],db_result[i]["lon"])
                     if (center.distanceTo(cur_pos)<$scope.radius_size){
+                        $scope.datas_within_bounds.push(db_result[i])
                         $scope.datas_to_plot.push(db_result[i])
                     }
                 }
-
-                data_observer.data_updated();
+                console.log($scope.datas_to_plot.length)
+                db_observer.db_data_updated();
                 
             }
         });
 
-        
-        
-
-    });
-
-    
-
+}
 
 // $scope.radius_size = 300
 // the_cricle = L.circle([[59.33057783, 18.0894317], [59.34057783, 18.0994317]],$scope.radius_size,{color: "#ff7800",fillOpacity: 0.0})
@@ -108,7 +134,38 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
 // });
 
 
+$scope.sqm_slider_update = function(){
+    sqm_slider_observer.slider_updated();
+}
 
+$scope.slider = {
+    minValue: 0,
+    maxValue: 200,
+    options: {
+        floor: 0,
+        ceil: 200,
+        step: 5,
+        minRange: 5,
+        noSwitching: true,
+        onChange: $scope.sqm_slider_update
+    }
+};
+
+// ***** Data Helper ?? ***** //
+
+function filterOnSqm(){
+    new_datas_to_plot = [];
+    for (var i in $scope.datas_within_bounds){
+        if ($scope.datas_within_bounds[i]["sqm"] < parseInt($scope.sqm_slider_value_max) && parseInt($scope.datas_within_bounds[i]["sqm"]) > $scope.sqm_slider_value_min){
+            new_datas_to_plot.push($scope.datas_within_bounds[i])
+        }
+    }
+    $scope.datas_to_plot = new_datas_to_plot;
+}
+
+
+
+// ************************** //
 
 
 

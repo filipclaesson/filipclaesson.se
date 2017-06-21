@@ -47,7 +47,7 @@ ChartHandler.prototype.plotData = function(data_to_visulize) {
             zeroline: false
         },
         yaxis: {
-            title: 'pris',
+            title: 'Kvadratmeterpris',
             showline: false
         }
     };
@@ -110,8 +110,8 @@ MapHandler.prototype.getCircles = function() {
 };
 
 
-MapHandler.prototype.drawCircles = function(data_to_visulize) {
-	for (var i in data_to_visulize){
+MapHandler.prototype.drawApts = function(data_to_visulize) {
+    for (var i in data_to_visulize){
 		cur_pos = L.latLng(data_to_visulize[i]["lat"],data_to_visulize[i]["lon"])
        	var circle = L.circle(cur_pos,10)
        	this.circles.addLayer(circle)
@@ -119,76 +119,14 @@ MapHandler.prototype.drawCircles = function(data_to_visulize) {
 	this.circles.addTo(this.leaflet_map)
 };
 
-MapHandler.prototype.clearCircles = function() {
-	this.circles.clearLayers()
+MapHandler.prototype.clearApts = function() {
+	this.circles.clearLayers();
 }
 
-MapHandler.prototype.setBounds = function(center) {
-	this.bounds.setLatLng(center);
+MapHandler.prototype.setBounds = function(center, radius_size) {
+	this.bounds.setRadius(radius_size)
+    this.bounds.setLatLng(center);
 	this.bounds.addTo(this.leaflet_map);
 };
-
-
-
-// // 
-// 	getName(){
-// 		return this.name
-// 	}
-
-// 	setName(name){
-// 		this.name = name
-// 	}
-
-// }
-
-// module.exports =MapHandler;
-
-
- // Plotly.purge('analysis_graph');
- //    y = []
- //    x = []
- //    console.log(db_result[i])
- //    plot_data = []
- //    for (var i = 0; i < db_result.length; i++) {
- //        y.push(db_result[i]["sqm_price"])
- //        date = new Date(db_result[i]["sold_date"]);
- //        // date = date = String(date.getFullYear()) + '-Q' + String(Math.floor((date.getMonth() + 3) / 3))
- //        x.push(date)
- //    };
-
- //    plot_data.push({
- //        x:x,
- //        y:y,
- //        mode: 'markers',
- //        name: 'Historiska Försäljningar'
- //    });
- //    // apt_in
-    
- //    today = new Date();
-    
- //    plot_data.push({
- //        y:[apt_in.price/apt_in.m2],
- //        x:[today],
- //        mode: 'markers',
- //        name: 'Angiven Lägenhet'
- //    });
- //    console.log("plot_data");
- //    console.log(plot_data);
-    
- //    var layout = {
- //        title: 'Historisk Data',
- //        xaxis: {
- //            title: 'Datum',
- //            showgrid: false,
- //            zeroline: false
- //        },
- //        yaxis: {
- //            title: 'pris',
- //            showline: false
- //        }
- //    };
-    
- //    PLOT = document.getElementById('analysis_graph');
- //    Plotly.plot(PLOT, plot_data, layout);
 
 
