@@ -15,8 +15,7 @@ app.get("/get_apartments", function (req,res) {
 	console.log("inne i get_apartments")
 	var handleResponse = function(rows){
         console.log("inside apartments handle response");
-        //console.log(rows)
-        //console.log(JSON.stringify(rows))
+
 
 
         
@@ -29,7 +28,6 @@ app.get("/get_apartments", function (req,res) {
             });
         }else{ 
             console.log('server happy =)')
-            //console.log(rows)
             res.json({
                 success: true,
                 message: "Got data =)",

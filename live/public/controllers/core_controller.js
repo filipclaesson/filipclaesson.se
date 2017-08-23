@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp', ['ngRoute','isteven-multi-select','rzModule']);
+var myApp = angular.module('myApp', ['ngRoute','isteven-multi-select','rzModule','ngMaterial']);
 myApp.controller('CoreController', ['$scope', '$http', function($scope, $http) {
     console.log("Hello World from controller");
 
@@ -53,10 +53,9 @@ $scope.initiateLeaflet = function(){
 
 
 
-}]).config(function($routeProvider){
+}]).config(function($routeProvider,$mdThemingProvider){
     $routeProvider.
-
-    when('/',
+    when('/distance_visualizer',
         {
             templateUrl: 'views/plot_distance.client.html'
         }).when('/analysis',
@@ -65,9 +64,14 @@ $scope.initiateLeaflet = function(){
         }).when('/heatmap',
         {
             templateUrl: 'views/heatmap.client.html'
-        }).when('/sanity',
+        }).when('/',
         {
-            templateUrl: 'views/sanity.client.html'
+            templateUrl: 'views/map-analysis.client.html'
         })
+
+    $mdThemingProvider.theme('default')
+	.primaryPalette('pink')
+	.accentPalette('blue');
             
     });
+

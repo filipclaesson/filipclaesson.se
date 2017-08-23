@@ -1,4 +1,4 @@
-myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', function($scope, $http,$rootScope) {
+myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope','ngMaterial'], function($scope, $http,$rootScope) {
     console.log("Hello World from apts sanity visalization");
     
     // ------------ global variables ------------ //
@@ -17,10 +17,12 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
 
 
     var sanity_map = new MapHandler('mapid_sanity', $scope.radius_size)
-    sanity_map.setLegend('topright','<p><b>Klicka på kartan!</b><br>Analysen nedan baseras på områden innanför cirkeln.</p>')
+    sanity_map.setLegend('bottomleft','<p><b>Klicka på kartan!</b><br>Analysen nedan baseras på områden innanför cirkeln.</p>')
 
     var sanity_chart = new ChartHandler('analysis_graph')
     //sanity_chart.plotData([])
+
+    var data_handler = new DataHandler();
 
 
 
@@ -54,20 +56,20 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope', functi
 
     db_observer.on('db_data_updated', function () {
         console.log("db_data_updated event occured")
-        filterOnSqm();
+        data_handler.filterOnSqm($scope.sqm_slider_value_min,$scope.sqm_slider_value_max);
         sanity_map.clearApts();
-        sanity_map.drawApts($scope.datas_to_plot);
+        sanity_map.drawApts(data_handler.getFilteredData());
         sanity_map.setBounds($scope.current_center, $scope.radius_size);
-        sanity_chart.plotData($scope.datas_to_plot);
+        sanity_chart.plotData(data_handler.getFilteredData());
     });
 
 
     sqm_slider_observer.on('slider_updated', function () {
         console.log("slider_updated event occured")
-        filterOnSqm();
+        data_handler.filterOnSqm($scope.sqm_slider_value_min,$scope.sqm_slider_value_max);
         sanity_map.clearApts();
-        sanity_map.drawApts($scope.datas_to_plot);
-        sanity_chart.plotData($scope.datas_to_plot);
+        sanity_map.drawApts(data_handler.getFilteredData());
+        sanity_chart.plotData(data_handler.getFilteredData());
 
     });
 
@@ -96,21 +98,23 @@ function get_data_from_db(position){
         
         $http.get('/get_apartments', {params: reqData}).success(function(response){
             if (response.success){
-                data = response.data;         
+                data = response.data;
                 db_result = data;
-                //filter raw data to fit within circle
-                $scope.datas_within_bounds = [];
-                $scope.datas_to_plot = [];
+                //filter raw data to fit within bounds
+                var datas_within_bounds = [];
                 center = position;
                 for (var i in db_result){
                     cur_pos = L.latLng(db_result[i]["lat"],db_result[i]["lon"])
                     if (center.distanceTo(cur_pos)<$scope.radius_size){
-                        $scope.datas_within_bounds.push(db_result[i])
-                        $scope.datas_to_plot.push(db_result[i])
+                        datas_within_bounds.push(db_result[i])
                     }
                 }
-                console.log($scope.datas_to_plot.length)
-                db_observer.db_data_updated();
+
+                data_handler.setBoundedData(datas_within_bounds);
+                data_handler.resetFilteredData();
+
+                //console.log(data_handler.getBoundedData().length)
+                db_observer.db_data_updated(); // emmit event that db data is updated
                 
             }
         });
@@ -122,33 +126,10 @@ $scope.sqm_slider_update = function(){
     sqm_slider_observer.slider_updated();
 }
 
-$scope.slider = {
-    minValue: 0,
-    maxValue: 200,
-    options: {
-        floor: 0,
-        ceil: 200,
-        step: 5,
-        minRange: 5,
-        noSwitching: true,
-        onChange: $scope.sqm_slider_update
-    }
-};
+
+
 
 // ***** Data Helper ?? ***** //
-
-function filterOnSqm(){
-    new_datas_to_plot = [];
-    for (var i in $scope.datas_within_bounds){
-        if ($scope.datas_within_bounds[i]["sqm"] < parseInt($scope.sqm_slider_value_max) && parseInt($scope.datas_within_bounds[i]["sqm"]) > $scope.sqm_slider_value_min){
-            new_datas_to_plot.push($scope.datas_within_bounds[i])
-        }
-    }
-    $scope.datas_to_plot = new_datas_to_plot;
-}
-
-
-
 function getBoundsFromPosAndDist(latlng, square_meassure){  // generally used geo measurement function
     var R = 6378.137; // Radius of earth in KM
    
@@ -162,4 +143,35 @@ function getBoundsFromPosAndDist(latlng, square_meassure){  // generally used ge
     bounds = L.latLngBounds(southWest, northEast);
     return bounds
 }
+
+
+
+// $scope.slider = {
+//     minValue: 0,
+//     maxValue: 200,
+//     options: {
+//         floor: 0,
+//         ceil: 200,
+//         step: 5,
+//         minRange: 5,
+//         noSwitching: true,
+//         showSelectionBar: true,
+//         onChange: $scope.sqm_slider_update
+//     }
+// };
+
+$scope.slider = {
+  minValue: 10,
+  maxValue: 90,
+  options: {
+    floor: 0,
+    ceil: 100,
+    step: 10,
+    showTicks: true,
+    onChange: $scope.sqm_slider_update
+  }
+};
+
+
+}])
 
