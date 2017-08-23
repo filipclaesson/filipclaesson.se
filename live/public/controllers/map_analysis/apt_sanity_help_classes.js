@@ -68,14 +68,15 @@ function MapHandler(name, bounds_radius){
 		this.name = name;
 		//this.data = data;
 		// setup leaflet map
-		this.leaflet_map = L.map('mapid_sanity',{ zoomControl:false, detectRetina:true }).setView([59.33057783, 18.0894317], 13);
+		this.leaflet_map = L.map('mapid_sanity',{ zoomControl:false }).setView([59.33057783, 18.0894317], 13);
 		L.tileLayer(
 			'https://api.mapbox.com/styles/v1/mrliffa/citses8bt00062ipelfijao0j/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
 			, {
 				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
 				maxZoom: 18,
 				id: 'mrliffa/citses8bt00062ipelfijao0j/tiles/256',
-				accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
+				accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ',
+                detectRetina: true
 			}
 		).addTo(this.leaflet_map);
 
