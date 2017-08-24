@@ -52,11 +52,18 @@ ChartHandler.prototype.plotData = function(data_to_visulize) {
         yaxis: {
             title: 'Kvadratmeterpris',
             showline: false
+        },
+        margin: {
+            l: 80,
+            r: 10,
+            b: 50,
+            t: 50,
+            pad: 4
         }
     };
     
     PLOT = document.getElementById('analysis_graph');
-    Plotly.plot(PLOT, plot_data, layout);
+    Plotly.plot(PLOT, plot_data, layout,{displayModeBar: false});
 }
 
 
@@ -75,8 +82,7 @@ function MapHandler(name, bounds_radius){
 				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
 				maxZoom: 18,
 				id: 'mrliffa/citses8bt00062ipelfijao0j/tiles/256',
-				accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ',
-                detectRetina: true
+				accessToken: 'pk.eyJ1IjoibXJsaWZmYSIsImEiOiJjaXRzZWk2NDYwMDFoMm5tcmdobXVwMmgzIn0.I-e4EO_ZN-gC27258NMZNQ'
 			}
 		).addTo(this.leaflet_map);
 

@@ -1,4 +1,4 @@
-myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope','ngMaterial'], function($scope, $http,$rootScope) {
+myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope','ngMaterial', function($scope, $http,$rootScope) {
     console.log("Hello World from apts sanity visalization");
     
     // ------------ global variables ------------ //
@@ -17,7 +17,7 @@ myApp.controller('AptSanityController', ['$scope', '$http', '$rootScope','ngMate
 
 
     var sanity_map = new MapHandler('mapid_sanity', $scope.radius_size)
-    sanity_map.setLegend('bottomleft','<p><b>Klicka på kartan!</b><br>Analysen nedan baseras på områden innanför cirkeln.</p>')
+    sanity_map.setLegend('bottomleft','<p><b>Klicka på kartan!</b><br>Grafen baseras på området innanför cirkeln.</p>')
 
     var sanity_chart = new ChartHandler('analysis_graph')
     //sanity_chart.plotData([])
@@ -146,31 +146,31 @@ function getBoundsFromPosAndDist(latlng, square_meassure){  // generally used ge
 
 
 
-// $scope.slider = {
-//     minValue: 0,
-//     maxValue: 200,
-//     options: {
-//         floor: 0,
-//         ceil: 200,
-//         step: 5,
-//         minRange: 5,
-//         noSwitching: true,
-//         showSelectionBar: true,
-//         onChange: $scope.sqm_slider_update
-//     }
-// };
-
 $scope.slider = {
-  minValue: 10,
-  maxValue: 90,
-  options: {
-    floor: 0,
-    ceil: 100,
-    step: 10,
-    showTicks: true,
-    onChange: $scope.sqm_slider_update
-  }
+    minValue: 0,
+    maxValue: 200,
+    options: {
+        floor: 0,
+        ceil: 200,
+        step: 1,
+        minRange: 1,
+        noSwitching: true,
+        showSelectionBar: true,
+        onChange: $scope.sqm_slider_update
+    }
 };
+
+// $scope.slider = {
+//   minValue: 10,
+//   maxValue: 90,
+//   options: {
+//     floor: 0,
+//     ceil: 100,
+//     step: 1,
+//     minRange: 1,
+//     onChange: $scope.sqm_slider_update
+//   }
+// };
 
 
 }])

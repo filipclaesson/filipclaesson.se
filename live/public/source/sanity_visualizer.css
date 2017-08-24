@@ -10,7 +10,7 @@
 
 
 #analysis_graph{
-	height:400px;
+	height:300px;
 	width:100%
 }
 
@@ -21,10 +21,8 @@
 
 
 
-
-
-.custom-slider.rzslider .rz-bar {
-  background: #aaa;
+.custom-slider.rzslider .rz-bar span {
+  background: #8f9690 !important;
   height: 2px;
 }
 .custom-slider.rzslider .rz-selection {
@@ -49,10 +47,10 @@
   bottom: 14px;
 }
 
-/*.custom-slider.rzslider .rz-limit {
-  font-weight: bold;
+.custom-slider.rzslider .rz-limit {
+  display: none;
 }
-*/
+
 .custom-slider.rzslider .rz-tick {
   width: 1px;
   height: 10px;
@@ -64,4 +62,28 @@
 
 .custom-slider.rzslider .rz-tick.rz-selected {
   background: orange;
+}
+
+
+.top-map-analysis{
+    margin-top: 25px;
+    border-radius: 3px;
+}
+
+
+.desc-map-analysis{
+    border-radius: 3px;
+    background-color: #E8E6E3;
+}
+
+.desc-map-analysis p,h4{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align:center;
+
+
+}
+
+#analysis_graph{
+  margin-top:20px;
 }
