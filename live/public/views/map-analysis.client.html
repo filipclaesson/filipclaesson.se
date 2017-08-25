@@ -4,52 +4,34 @@
 <div class="col-md-12 top-map-analysis"></div>
 <div class="col-md-12">
 	
-	<div class="col-md-6">
+	<div class="col-md-6 col-xl-6">
 		
-		<div class="col-md-12 desc-map-analysis">
+		<div class="col-md-12 col-xl-12 desc-map-analysis">
 			<h4>Klicka på kartan för att välja område. <br>
 				Filtrera på kvm och välj vilken typ av graf du vill se.</h4> 
-    		<div class="col-md-1"></div>
-    		<div class="col-md-2">
+    		<div class="col-md-1 col-xl-1"></div>
+    		<div class="col-md-2 col-xl-2">
 				<md-input-container>
 			        <input type="number" ng-click="sqm_slider_update()" ng-model="sqm_slider_value_min">
 	     		 </md-input-container>			
 			</div>
-    		<div class="col-md-6">
+    		<div class="col-md-6 col-xl-6">
 				<rzslider class="custom-slider" rz-slider-model="sqm_slider_value_min" rz-slider-high="sqm_slider_value_max" rz-slider-options="slider.options" rz-slider-show-ticks="true" rz-slider-hide-limit-labels="true"></rzslider>
 			</div>
-			<div class="col-md-2">
+			<div class="col-md-2 col-xl-2">
 				<md-input-container>
 			        <input type="number" ng-click="sqm_slider_update()" ng-model="sqm_slider_value_max">
 	     		 </md-input-container>			
 			</div>
-			<div class="col-md-1"></div>
+			<div class="col-md-1 col-xl-1"></div>
 		</div>
-<!-- 
-		<div class="col-md-12">
 
-			<div class="col-md-2">
-				<md-input-container>
-			        <input flex type="number"  ng-model="sqm_slider_value_min">
-	     		 </md-input-container>			
-			</div>
-			<div class="col-md-8">
-				
-				<rzslider class="custom-slider" rz-slider-model="sqm_slider_value_min" rz-slider-high="sqm_slider_value_max" rz-slider-options="slider.options" rz-slider-show-ticks="true" rz-slider-hide-limit-labels="true"></rzslider>
-			</div>
-			<div class="col-md-2">
-				<md-input-container>
-			        <input ng-model="sqm_slider_value_max">
-	     		 </md-input-container>			
-			</div>
-		</div>
- -->
-		<div class="col-md-10">
+		<div class="col-md-10 col-xl-10">
 			<div id='analysis_graph'></div>
 		</div>
 	</div>
-	<div class="col-md-6">
-		<div class="col-md-12" id="mapid_sanity"></div>
+	<div class="col-md-6 col-xl-6">
+		<div class="col-md-12 col-xl-12" id="mapid_sanity"></div>
 		<div class="input-group col-md-6">
 		</div>
 		
